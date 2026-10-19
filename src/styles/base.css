@@ -4,7 +4,9 @@
    ========================================================================== */
 
 /* --- Fonts ---------------------------------------------------------------- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&family=JetBrains+Mono:wght@400;500&display=swap');
+/* Weights are requested via <link rel="stylesheet"> in template.html. Deliberately not
+   @import: that blocks first paint and becomes a single point of failure on networks
+   where fonts.googleapis.com is slow or unreachable. The stacks below degrade tidily. */
 
 /* --- Tokens --------------------------------------------------------------- */
 :root {

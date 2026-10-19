@@ -7,7 +7,7 @@
 // every git call goes through execFileSync with stdio:'inherit' and output we need is
 // redirected to a temp file inside the workspace instead of piped.
 
-import { existsSync, readFileSync, readdirSync, statSync, copyFileSync, mkdirSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync, copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
@@ -21,18 +21,76 @@ const gitExe = existsSync(portableGit) ? portableGit : 'git';
 
 mkdirSync(tmpDir, { recursive: true });
 
+/* ----------------------------------------------------------- TLS trust --- */
+
+/**
+ * Corporate proxies, VPNs and "accelerator" tools re-sign TLS traffic, which makes git
+ * fail with UNABLE_TO_VERIFY_LEAF_SIGNATURE while the browser still works (it trusts the
+ * Windows store). Git's bundled OpenSSL ignores the Windows store, so build a CA bundle
+ * from git's own roots plus the machine's CurrentUser Root/CA stores.
+ * Returns the bundle path, or undefined to keep git's default behaviour.
+ */
+function buildCaBundle() {
+  const bundle = join(tmpDir, 'ca-bundle.crt');
+  const gitRoots = [
+    'D:\\ai\\tools\\git\\ucrt64\\etc\\ssl\\certs\\ca-bundle.crt',
+    'D:\\ai\\tools\\git\\mingw64\\ssl\\certs\\ca-bundle.crt',
+    'D:\\ai\\tools\\git\\etc\\ssl\\certs\\ca-bundle.crt',
+  ].find((p) => existsSync(p));
+
+  // Export the Windows stores with PowerShell (no certutil: it is denied in sandboxes).
+  const script = `
+    $sb = New-Object System.Text.StringBuilder
+    foreach ($store in @('Root','CA')) {
+      foreach ($c in (Get-ChildItem "Cert:\\CurrentUser\\$store" -ErrorAction SilentlyContinue)) {
+        try {
+          $b64 = [Convert]::ToBase64String($c.RawData, 'InsertLineBreaks')
+          [void]$sb.AppendLine("-----BEGIN CERTIFICATE-----")
+          [void]$sb.AppendLine($b64)
+          [void]$sb.AppendLine("-----END CERTIFICATE-----")
+        } catch {}
+      }
+    }
+    [System.IO.File]::WriteAllText('${bundle}.win', $sb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
+  `;
+
+  try {
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], { stdio: 'ignore' });
+  } catch {
+    return undefined;
+  }
+
+  if (!existsSync(`${bundle}.win`)) return undefined;
+
+  const parts = [];
+  if (gitRoots) parts.push(readFileSync(gitRoots, 'utf8'));
+  parts.push(readFileSync(`${bundle}.win`, 'utf8'));
+  writeFileSync(bundle, parts.join('\n'), 'utf8');
+  rmSync(`${bundle}.win`, { force: true });
+  return bundle;
+}
+
+const caBundle = buildCaBundle();
+if (caBundle) console.log(`✓ TLS: CA bundle with Windows store loaded (${caBundle})`);
+
 /* ----------------------------------------------------------- git helpers -- */
 
 let capture = 0;
 
+/** Environment shared by every git invocation. */
+function gitEnv() {
+  const env = { ...process.env, GIT_TERMINAL_PROMPT: process.env.GITHUB_TOKEN ? '0' : '1' };
+  if (caBundle) {
+    env.GIT_SSL_CAINFO = caBundle;
+    env.SSL_CERT_FILE = caBundle;
+  }
+  return env;
+}
+
 /** Run git with inherited stdio (required under restricted sandboxing). */
 function git(args, { quiet = false } = {}) {
   if (!quiet) {
-    execFileSync(gitExe, args, {
-      cwd: root,
-      stdio: 'inherit',
-      env: { ...process.env, GIT_TERMINAL_PROMPT: process.env.GITHUB_TOKEN ? '0' : '1' },
-    });
+    execFileSync(gitExe, args, { cwd: root, stdio: 'inherit', env: gitEnv() });
     return '';
   }
 
@@ -50,6 +108,7 @@ function git(args, { quiet = false } = {}) {
     execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
       cwd: root,
       stdio: 'ignore',
+      env: gitEnv(),
     });
   } catch {
     return '';
