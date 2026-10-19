@@ -268,25 +268,54 @@ console.log('✓ remote reset to the plain HTTPS URL (token is not persisted)');
 
 if (process.argv.includes('--enable-pages')) {
   console.log('→ enabling GitHub Pages (main / root)…');
-  const res = await fetch(`https://api.github.com/repos/${config.owner}/${config.repo}/pages`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'waw-deploy',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-    body: JSON.stringify({ source: { branch: 'main', path: '/' } }),
-  });
+  const url = `https://api.github.com/repos/${config.owner}/${config.repo}/pages`;
+  const payload = JSON.stringify({ source: { branch: 'main', path: '/' } });
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'waw-deploy',
+    'X-GitHub-Api-Version': '2022-11-28',
+    'Content-Type': 'application/json',
+  };
 
-  if (res.status === 201) {
-    const page = await res.json();
-    console.log(`✓ Pages enabled → ${page.html_url}`);
-  } else if (res.status === 409) {
+  let status = 0;
+  let body = '';
+
+  try {
+    const res = await fetch(url, { method: 'POST', headers, body: payload });
+    status = res.status;
+    body = await res.text();
+  } catch (err) {
+    // A re-signing proxy (VPN / accelerator) makes Node distrust the chain while the
+    // browser and PowerShell are fine — retry through the Windows certificate store.
+    // The token travels in an env var, never on the command line.
+    console.log(`· node fetch failed (${err.cause?.code ?? err.message}) — retrying via Windows TLS`);
+    const ps = [
+      "$ErrorActionPreference='Stop'",
+      '[Net.ServicePointManager]::SecurityProtocol=[Net.SecurityProtocolType]::Tls12',
+      `$h=@{Authorization="Bearer $env:WAW_TOKEN";Accept='application/vnd.github+json';'User-Agent'='waw-deploy';'X-GitHub-Api-Version'='2022-11-28'}`,
+      `try { $r=Invoke-WebRequest -Method Post -Uri '${url}' -Headers $h -Body '${payload.replace(/'/g, "''")}' -UseBasicParsing; Write-Output $r.StatusCode; Write-Output $r.Content } catch { Write-Output ([int]$_.Exception.Response.StatusCode); Write-Output $_.ErrorDetails.Message }`,
+    ].join('; ');
+
+    try {
+      execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], {
+        stdio: 'inherit',
+        env: { ...process.env, WAW_TOKEN: token },
+      });
+      status = 0; // PowerShell printed the result directly; nothing to parse here
+    } catch {
+      status = -1;
+    }
+  }
+
+  if (status === 201) {
+    console.log('✓ Pages enabled');
+  } else if (status === 409) {
     console.log('· Pages already enabled');
+  } else if (status === 0) {
+    console.log('· see the status printed above');
   } else {
-    const body = await res.text();
-    console.error(`✗ could not enable Pages (${res.status}): ${body.slice(0, 300)}`);
+    console.error(`✗ could not enable Pages (${status}): ${String(body).slice(0, 300)}`);
     console.error('  Enable manually: Settings → Pages → Deploy from a branch → main / (root)');
   }
 }
