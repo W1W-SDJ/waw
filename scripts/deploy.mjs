@@ -222,13 +222,30 @@ if (!process.argv.includes('--push')) {
   process.exit(0);
 }
 
-const token = process.env.GITHUB_TOKEN;
-if (!token) {
-  console.error('\n✗ GITHUB_TOKEN is not set.');
-  console.error('  Create one at https://github.com/settings/tokens with the `repo` scope, then:');
-  console.error('    $env:GITHUB_TOKEN="ghp_..."; node scripts/deploy.mjs --push');
+function resolveToken() {
+  if (process.env.GITHUB_TOKEN) return { token: process.env.GITHUB_TOKEN.trim(), from: 'GITHUB_TOKEN' };
+  // Preferred: a local, git-ignored file. The secret never enters chat history or a
+  // command line (where it would land in shell history).
+  const file = join(root, '.github-token');
+  if (existsSync(file)) {
+    const token = readFileSync(file, 'utf8').trim().replace(/^Bearer\s+/i, '');
+    if (token) return { token, from: '.github-token (git-ignored)' };
+  }
+  return null;
+}
+
+const auth = resolveToken();
+if (!auth) {
+  console.error('\n✗ no token found.');
+  console.error('  1. https://github.com/settings/tokens → Generate new token (classic), scope `repo`');
+  console.error(`  2. write it into ${join(root, '.github-token')} (this file is git-ignored):`);
+  console.error('     Set-Content -Path .github-token -Value "ghp_xxx" -NoNewline');
+  console.error('  3. node scripts/deploy.mjs --push');
   process.exit(1);
 }
+
+const token = auth.token;
+console.log(`✓ auth from ${auth.from}`);
 
 const remoteUrl = `https://x-access-token:${token}@github.com/${config.owner}/${config.repo}.git`;
 gitTry(['remote', 'remove', 'origin'], { quiet: true });
@@ -239,7 +256,7 @@ try {
   git(['push', '-u', 'origin', 'main'], {});
   console.log('✓ pushed to origin/main');
 } catch (err) {
-  console.error('✗ push failed:', err.message);
+  console.error('✗ push failed:', String(err.message).replace(token, '***'));
   gitTry(['remote', 'set-url', 'origin', config.url], { quiet: true });
   rmSync(tmpDir, { recursive: true, force: true });
   process.exit(1);
