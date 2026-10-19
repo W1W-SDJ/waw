@@ -165,6 +165,12 @@ gitTry(['config', 'user.name', config.owner], { quiet: true });
 gitTry(['config', 'user.email', `${config.owner}@users.noreply.github.com`], { quiet: true });
 gitTry(['config', 'core.quotepath', 'false'], { quiet: true });
 gitTry(['config', 'commit.gpgsign', 'false'], { quiet: true });
+// Windows git defaults to schannel, whose credential handle is unavailable in restricted
+// sandboxes ("SEC_E_NO_CREDENTIALS"). OpenSSL + an explicit CA bundle works instead.
+gitTry(['config', 'http.sslBackend', 'openssl'], { quiet: true });
+if (caBundle) {
+  gitTry(['config', 'http.sslCAInfo', caBundle], { quiet: true });
+}
 console.log(
   `✓ identity ${git(['config', 'user.name'], { quiet: true })} <${git(['config', 'user.email'], { quiet: true })}>`,
 );

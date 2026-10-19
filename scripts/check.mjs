@@ -5,7 +5,7 @@
 // 3. the CSS minifier preserves the media-query structure
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
-import { join, resolve, relative } from 'node:path';
+import { join, resolve, relative, dirname } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const root = resolve(import.meta.dirname, '..');
@@ -134,10 +134,33 @@ if (existsSync(join(root, 'dist'))) {
   const sub = readFileSync(join(root, 'dist/projects/index.html'), 'utf8');
   if (!/href="\.\.\/assets\/app-/.test(sub)) fail('dist/projects/index.html css path is not depth-correct');
   if (!/src="\.\.\/main\.js"/.test(sub)) fail('dist/projects/index.html js path is not depth-correct');
-  if (/__[A-Z][A-Z0-9_]*__/.test(html) && !/__SITE__/.test(html.replace(/__SITE__/g, ''))) {
-    /* no-op guard; explicit token list is checked at build time */
-  }
   pass('dist HTML: page markers, hashed assets, depth-correct relative paths');
+
+  // 5. Every local href/src must resolve to a real file inside dist/.
+  // Catches broken nav links, missing favicon, wrong asset hashes.
+  const distDir = join(root, 'dist');
+  for (const page of ['index.html', 'projects/index.html', 'about/index.html']) {
+    const file = join(distDir, page);
+    if (!existsSync(file)) {
+      fail(`dist/${page} missing`);
+      continue;
+    }
+    const source = readFileSync(file, 'utf8');
+    const refs = [...source.matchAll(/(?:href|src)="([^"]+)"/g)].map((m) => m[1]);
+    const local = refs.filter(
+      (r) => !/^(https?:|mailto:|#|data:)/.test(r) && !r.endsWith('/') && !r.startsWith('//'),
+    );
+    for (const ref of local) {
+      const target = resolve(distDir, dirname(page), ref.split(/[?#]/)[0]);
+      if (!existsSync(target)) fail(`dist/${page}: broken reference "${ref}"`);
+    }
+    // Directory links (e.g. "projects/") must contain an index.html.
+    for (const ref of refs.filter((r) => r.endsWith('/') && !/^(https?:|#)/.test(r))) {
+      const target = resolve(distDir, dirname(page), ref, 'index.html');
+      if (!existsSync(target)) fail(`dist/${page}: link "${ref}" has no index.html`);
+    }
+  }
+  pass('dist links: every local href/src resolves to a file');
 } else {
   console.log('· dist/ not built yet — run npm run build first');
 }
