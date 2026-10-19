@@ -8,3 +8,5 @@ tmp/
 Thumbs.db
 .whale-palette.json
 .github-token
+docs/preview/
+docs/.edge/
