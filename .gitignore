@@ -10,3 +10,4 @@ Thumbs.db
 .github-token
 docs/preview/
 docs/.edge/
+.deploy-manifest.json

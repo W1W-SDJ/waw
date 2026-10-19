@@ -8,7 +8,7 @@
 // redirected to a temp file inside the workspace instead of piped.
 
 import { existsSync, readFileSync, readdirSync, statSync, copyFileSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 
 const root = resolve(import.meta.dirname, '..');
@@ -177,6 +177,13 @@ console.log(
 
 /* ---------------------------------------------------- copy dist to root --- */
 
+// A manifest lets us delete files this script published last time that the new build
+// no longer contains. Without it, anything you remove from public/ lingers at the repo
+// root forever and keeps being served by Pages (e.g. a retired favicon).
+const manifestPath = join(root, '.deploy-manifest.json');
+const previous = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : { files: [] };
+const previousFiles = new Set(previous.files ?? []);
+
 const copied = [];
 function copyRecursive(srcDir, dstDir, rel = '') {
   for (const entry of readdirSync(srcDir)) {
@@ -192,7 +199,29 @@ function copyRecursive(srcDir, dstDir, rel = '') {
   }
 }
 copyRecursive(dist, root);
+
+const currentFiles = new Set(copied);
+const removed = [...previousFiles].filter((f) => !currentFiles.has(f));
+for (const rel of removed) {
+  const target = join(root, rel);
+  if (!existsSync(target)) continue;
+  rmSync(target, { force: true });
+  // Drop directories that the removal left empty (e.g. a retired /old/ page).
+  let dir = dirname(target);
+  while (dir !== root && dir.startsWith(root) && readdirSync(dir).length === 0) {
+    rmSync(dir, { recursive: true, force: true });
+    dir = dirname(dir);
+  }
+}
+
+writeFileSync(manifestPath, `${JSON.stringify({ generatedAt: new Date().toISOString(), files: copied.sort() }, null, 2)}\n`);
+
 console.log(`✓ copied ${copied.length} built files to the repo root`);
+if (removed.length) {
+  console.log(`✓ pruned ${removed.length} file(s) no longer in the build:`);
+  for (const rel of removed.slice(0, 8)) console.log(`   − ${rel}`);
+  if (removed.length > 8) console.log(`   … ${removed.length - 8} more`);
+}
 
 /* ---------------------------------------------------------------- commit -- */
 

@@ -5,7 +5,8 @@ const urls = [
   `${base}projects/`,
   `${base}about/`,
   `${base}main.js`,
-  `${base}favicon.svg`,
+  `${base}whale.png`,
+  `${base}whale-head.png`,
 ];
 
 let failures = 0;
