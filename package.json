@@ -1,0 +1,16 @@
+{
+  "name": "waw-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Editorial static portfolio for W1W-SDJ — zero-dependency Node build, no bundler required.",
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/preview.mjs",
+    "check": "node scripts/check.mjs",
+    "fetch:repos": "node scripts/fetch-repos.mjs",
+    "toolchain": "node scripts/get-toolchain.mjs",
+    "deploy": "node scripts/build.mjs && node scripts/deploy.mjs"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-09-29T16:04:03.880Z",
+  "user": {
+    "login": "W1W-SDJ",
+    "name": null,
+    "bio": null,
+    "avatar": "https://avatars.githubusercontent.com/u/330400514?v=4",
+    "blog": null,
+    "location": null,
+    "followers": 0,
+    "following": 0,
+    "publicRepos": 1,
+    "htmlUrl": "https://github.com/W1W-SDJ",
+    "createdAt": "2026-09-17T11:00:21Z"
+  },
+  "repos": [
+    {
+      "name": "waw",
+      "description": "Try",
+      "readmeSummary": null,
+      "url": "https://github.com/W1W-SDJ/waw",
+      "homepage": null,
+      "language": null,
+      "topics": [],
+      "stars": 0,
+      "forks": 0,
+      "sizeKb": 0,
+      "createdAt": "2026-09-29T16:00:19Z",
+      "updatedAt": "2026-09-29T16:00:20Z",
+      "license": null,
+      "isProfileRepo": false
+    }
+  ]
+}

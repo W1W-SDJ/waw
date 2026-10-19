@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="__LANG__" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>__TITLE__</title>
+  <meta name="description" content="__DESC__">
+  <meta name="author" content="__AUTHOR__">
+  <meta name="theme-color" content="__THEME_COLOR__" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="__THEME_COLOR_DARK__" media="(prefers-color-scheme: dark)">
+  <meta name="color-scheme" content="light dark">
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="__TITLE__">
+  <meta property="og:description" content="__DESC__">
+  <meta property="og:url" content="__SITE_URL__">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="__ROOT__favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="__ROOT__favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="__CSS__">
+
+  <script>
+    window.__SITE__ = __CONFIG__;
+    (function () {
+      try {
+        var stored = localStorage.getItem('waw-theme');
+        var theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.dataset.theme = theme;
+      } catch (e) { /* keep the light default */ }
+    })();
+  </script>
+</head>
+<body data-page="__PAGE__" data-depth="__DEPTH__">
+  <div id="site">
+    <main class="initial">
+      <p class="kicker">__KICKER__</p>
+      <h1>在构建，也在记录。</h1>
+      <p>页面正在加载…如果停留太久，可以直接访问 <a href="__GITHUB__">__GITHUB_LABEL__</a>。</p>
+      <noscript>
+        <p>这个站点用一点点 JavaScript 来渲染内容。请在浏览器设置里启用 JavaScript，或直接前往
+          <a href="__GITHUB__">GitHub</a> 查看项目。</p>
+      </noscript>
+    </main>
+  </div>
+
+  <script>
+    // If the module never runs (old browser, blocked request), show a real fallback instead of a dead page.
+    setTimeout(function () {
+      var el = document.querySelector('#site .initial p:last-of-type');
+      if (el) el.textContent = '没能加载页面脚本，请检查网络后刷新。';
+    }, 4000);
+  </script>
+  <script type="module" src="__JS__"></script>
+</body>
+</html>
