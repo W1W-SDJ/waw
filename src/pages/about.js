@@ -33,9 +33,17 @@ export default async function renderAbout(outlet) {
 
   outlet.innerHTML = `
     <section class="hero hero--page reveal" id="top">
-      <p class="kicker">03 / About</p>
-      <h1 class="hero__title">关于<em>${esc(name)}</em></h1>
-      <p class="hero__lede">${esc(cfg.taglineZh)} ${esc(cfg.tagline)}</p>
+      <div class="hero__grid">
+        <div class="hero__copy">
+          <p class="kicker">03 / About</p>
+          <h1 class="hero__title">关于<em>${esc(name)}</em></h1>
+          <p class="hero__lede">${esc(cfg.taglineZh)} ${esc(cfg.tagline)}</p>
+        </div>
+        <figure class="whale-figure">
+          <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async">
+          <figcaption>whale · 看板娘</figcaption>
+        </figure>
+      </div>
     </section>
 
     <section class="section">
@@ -45,7 +53,7 @@ export default async function renderAbout(outlet) {
           <p>
             我是 <strong>${esc(name)}</strong>，GitHub 上是
             <a href="${esc(p.htmlUrl ?? cfg.social.github)}" target="_blank" rel="noopener noreferrer">@${esc(p.login ?? cfg.owner)}</a>。
-            ${since ? `${since} 年注册账号，` : ''}现在有 ${s.total} 个公开仓库、${s.languages} 种语言。
+            ${since ? `${since} 年注册账号，` : ''}现在有 ${s.total} 个公开仓库${s.languages ? `、${s.languages} 种语言` : ''}。
           </p>
           <p>
             这里既放正经项目，也放练手和半成品。我更在意“能否讲清楚自己做了什么”，

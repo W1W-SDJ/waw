@@ -13,6 +13,7 @@
     "toolchain": "node scripts/get-toolchain.mjs",
     "deploy": "node scripts/build.mjs && node scripts/deploy.mjs",
     "push": "node scripts/deploy.mjs --push --enable-pages",
-    "verify:live": "node scripts/verify-live.mjs"
+    "verify:live": "node scripts/verify-live.mjs",
+    "whale:assets": "node scripts/whale-assets.mjs"
   }
 }

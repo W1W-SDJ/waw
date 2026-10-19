@@ -33,7 +33,7 @@ export default async function renderProjects(outlet) {
           .join('')}
       </div>
 
-      <div class="grid" data-projects>
+      <div class="grid" data-projects data-count="${projects.length}">
         ${projects.length ? projects.map(projectCard).join('') : ''}
       </div>
 

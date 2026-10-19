@@ -102,7 +102,16 @@ export function stats(projects) {
   const days = latest ? Math.round((Date.now() - new Date(latest).getTime()) / 86_400_000) : null;
   const updatedLabel = days === null ? '—' : days <= 1 ? '今天' : days < 30 ? `${days} 天前` : `${Math.round(days / 30)} 个月前`;
 
-  return { total: projects.length, languages: languages.size, stars, updatedLabel, latest };
+  // A bare "0" reads like a bug; "—" reads like "nothing to count yet".
+  return {
+    total: projects.length,
+    languages: languages.size,
+    languagesLabel: languages.size ? String(languages.size) : '—',
+    stars,
+    starsLabel: stars ? String(stars) : '—',
+    updatedLabel,
+    latest,
+  };
 }
 
 export function generatedAt() {

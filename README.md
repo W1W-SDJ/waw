@@ -77,12 +77,38 @@ UNABLE_TO_VERIFY_LEAF_SIGNATURE / unable to verify the first certificate
 
 ## 设计说明
 
-- 纸感米白 `#f4f3eb` + 墨绿 `#153c38`，衬线标题（Newsreader）+ 无衬线正文（Inter）+ 等宽元信息（JetBrains Mono）
+**配色来自鲸鱼娘立绘本身**，不是凭感觉调的蓝。用 `npm run whale:assets` 从 280×373 的 PNG 里按明度采样，得到五档锚点：
+
+| 角色 | 色值 | 用在哪 |
+| --- | --- | --- |
+| deep | `#1b1d43` | 正文墨色、深色模式底 |
+| mid | `#343d7b` | 主按钮、导航强调 |
+| bright | `#556bb2` | 次级强调 |
+| light | `#83a4e3` | 水泡、发丝光、悬停边 |
+| pale | `#d5daeb` | 分隔线、引用边 |
+
+- 纸感蓝白底 `#f7f9ff`，深色为深海军蓝 `#0c1030`
+- 字体：衬线标题（Newsreader）+ 无衬线正文（Inter）+ 等宽元信息（JetBrains Mono）；整体走"小巧精致"——细发丝线、小字号大字距标签、宽行高
+- 鲸鱼娘出现四次：导航头像、首屏看板娘（带气泡与呼吸浮动）、关于页、右下角固定水印
+- 七颗缓慢上升的水泡，数量刻意克制，只当质感不抢注意力
 - 全站 CSS 变量驱动，`data-theme="dark"` 一键切换，默认跟随系统偏好
 - 首屏 HTML 里就有静态内容（含 `noscript` 兜底），JS 失败也不白屏
+- 滚动渐显带三重保险：IO + rAF 首屏即显 + 1.5s 兜底强制显示，任何环境都不会停在透明态
 - 相对路径按页面深度自动生成，部署在子路径或根域名都不会挂
 - 支持键盘导航、`prefers-reduced-motion`、打印样式
 - 字体用 `<link media="print" onload>` 异步加载，不阻塞首屏
+
+### 素材来源与再生成
+
+鲸鱼娘立绘来自 [dafeiyu-pet](https://github.com/1190fasheqi/dafeiyu-pet)（MIT License，DeepSeek 鲸鱼形象的二创），桌面端由 `whale-purse` 插件使用。
+
+站点用的两张图是从原始立绘裁切/缩放而来（`public/whale.png` 全身、`public/whale-head.png` 头像），由脚本生成：
+
+```bash
+npm run whale:assets
+```
+
+脚本会读取本机 `D:\ai\plugins\whale-purse\assets\whale-sprite.png`，顺便打印采样出的调色板。换立绘后重跑一次即可。
 
 ## 环境备注
 
