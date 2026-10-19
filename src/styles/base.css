@@ -72,6 +72,9 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
   --hairline: 1px solid var(--rule);
+
+  /* Tiling wave crest — drawn once as an SVG, tinted per theme. */
+  --wave-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='9' viewBox='0 0 22 9'%3E%3Cpath d='M0 6.5c2.75-5.5 8.25-5.5 11 0s8.25 5.5 11 0' fill='none' stroke='%2383a4e3' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 :root[data-theme='dark'] {
@@ -104,6 +107,8 @@
   --shadow-s: 0 1px 2px rgb(0 0 0 / 0.35);
   --shadow-m: 0 12px 30px -20px rgb(0 0 0 / 0.8), 0 2px 8px -4px rgb(0 0 0 / 0.5);
   --shadow-l: 0 34px 64px -34px rgb(0 0 0 / 0.85), 0 6px 16px -8px rgb(0 0 0 / 0.55);
+
+  --wave-tile: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='9' viewBox='0 0 22 9'%3E%3Cpath d='M0 6.5c2.75-5.5 8.25-5.5 11 0s8.25 5.5 11 0' fill='none' stroke='%237fb2ee' stroke-width='1.1' stroke-linecap='round'/%3E%3C/svg%3E");
 }
 
 /* --- Reset ---------------------------------------------------------------- */
@@ -163,7 +168,7 @@ button {
     linear-gradient(180deg, var(--paper), var(--paper-2) 58%, var(--paper));
 }
 
-/* The whale herself, faint but present, anchored bottom-right. */
+/* The whale herself, faint but present, anchored bottom-right — hugging a whale. */
 .whale-bg {
   position: fixed;
   right: clamp(-9rem, -6vw, -3rem);
@@ -177,7 +182,58 @@ button {
   mask-image: linear-gradient(160deg, #000 34%, transparent 88%);
 }
 
+.whale-bg img { width: 100%; height: auto; }
+
+/* Where the little whale sits in her arms. Percentages refer to the sprite box, so it
+   tracks the character at any size. Tuned so both of her hands stay visible at the
+   sides — that's what makes it read as "hugging" rather than "stuck on". */
+.whale-pet-art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.whale-bg__pet {
+  position: absolute;
+  left: 30.5%;
+  top: 58%;
+  width: 46%;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 6px 10px rgb(27 29 67 / 0.28));
+}
+
 :root[data-theme='dark'] .whale-bg { opacity: 0.2; filter: saturate(0.7) brightness(1.3); }
+
+/* --- Falling whales ------------------------------------------------------ */
+.whale-rain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.rain-whale {
+  position: absolute;
+  top: -8rem;
+  left: var(--l, 50%);
+  width: var(--s, 18px);
+  opacity: 0;
+  animation: whale-fall var(--dur, 22s) linear var(--delay, 0s) infinite;
+  will-change: transform;
+}
+
+.rain-whale__art { display: block; width: 100%; height: auto; }
+
+@keyframes whale-fall {
+  0% { opacity: 0; transform: translate3d(0, 0, 0) rotate(calc(var(--spin, 0deg) * -1)); }
+  8% { opacity: 0.42; }
+  50% { transform: translate3d(var(--drift, 0px), 55vh, 0) rotate(var(--spin, 0deg)); }
+  92% { opacity: 0.36; }
+  100% { opacity: 0; transform: translate3d(calc(var(--drift, 0px) * -1), 118vh, 0) rotate(calc(var(--spin, 0deg) * -1)); }
+}
+
+:root[data-theme='dark'] .rain-whale { opacity: 0.8; }
 
 /* Seven slow bubbles — few enough to read as texture, not chaos. */
 .bubbles {
@@ -521,6 +577,9 @@ button {
   display: grid;
   place-items: center;
   min-height: 17rem;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 /* soft halo behind her */
@@ -534,14 +593,82 @@ button {
   z-index: 0;
 }
 
-.whale-figure img {
+/* The character + the whale in her arms, scaled together. */
+.whale-hold {
   position: relative;
   z-index: 1;
   width: min(15rem, 68%);
-  height: auto;
-  filter: drop-shadow(0 18px 26px rgb(43 53 116 / 0.24));
   animation: bob 6.5s ease-in-out infinite;
 }
+
+.whale-hold img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 18px 26px rgb(43 53 116 / 0.24));
+}
+
+.whale-hold__pet {
+  position: absolute;
+  left: 30.5%;
+  top: 60%;
+  width: 46%;
+  transform: rotate(-4deg);
+  filter: drop-shadow(0 5px 9px rgb(27 29 67 / 0.3));
+  transition: transform 0.4s var(--ease-out);
+  animation: pet-bob 4.2s ease-in-out infinite;
+}
+
+@keyframes pet-bob {
+  0%, 100% { transform: translateY(0) rotate(-5.2deg); }
+  50% { transform: translateY(-2px) rotate(-2.8deg); }
+}
+
+/* tap reaction: squash + hop */
+.whale-figure.is-tapped .whale-hold { animation: squash 0.52s var(--ease-out); }
+.whale-figure.is-tapped .whale-say { animation: pop 0.5s var(--ease-out); }
+
+@keyframes squash {
+  0% { transform: scale(1, 1); }
+  28% { transform: scale(1.08, 0.9) translateY(6px); }
+  58% { transform: scale(0.96, 1.06) translateY(-8px); }
+  80% { transform: scale(1.02, 0.98); }
+  100% { transform: scale(1, 1); }
+}
+
+@keyframes pop {
+  0% { transform: rotate(1.5deg) scale(1); }
+  40% { transform: rotate(-2deg) scale(1.07); }
+  100% { transform: rotate(1.5deg) scale(1); }
+}
+
+/* little hearts / bubbles thrown on tap */
+.mascot-hearts {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.mascot-hearts i {
+  position: absolute;
+  font-style: normal;
+  font-size: 0.95rem;
+  line-height: 1;
+  animation: heart-rise 1.15s var(--ease-out) forwards;
+  animation-delay: var(--delay, 0ms);
+  transform: translate(-50%, 0) scale(var(--scale, 1));
+  opacity: 0;
+}
+
+@keyframes heart-rise {
+  0% { opacity: 0; transform: translate(-50%, 6px) scale(0.6); }
+  22% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--x, 0px)), -74px) scale(var(--scale, 1)); }
+}
+
+.whale-hold__pet { pointer-events: none; }
 
 @keyframes bob {
   0%, 100% { transform: translateY(0) rotate(-0.4deg); }
@@ -557,6 +684,25 @@ button {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--ink-4);
+  transition: color 0.25s var(--ease);
+}
+
+.whale-figure:hover figcaption { color: var(--accent); }
+
+.tap-hint {
+  color: var(--accent);
+  position: relative;
+}
+
+.tap-hint::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.4;
 }
 
 /* little speech bubble — the cute beat */
@@ -708,7 +854,13 @@ button {
   flex-direction: column;
   gap: 0.7rem;
   padding: 1.35rem 1.35rem 1.15rem;
-  background: var(--card);
+  /* Waves top and bottom via layered backgrounds — .card's two pseudo-elements are
+     already spoken for by the hover accent and glow. */
+  background-color: var(--card);
+  background-image: var(--wave-tile), var(--wave-tile);
+  background-repeat: repeat-x, repeat-x;
+  background-position: 0.9rem 5px, 0.9rem calc(100% - 5px);
+  background-size: 22px 9px, 22px 9px;
   border: 1px solid var(--rule);
   border-radius: var(--radius-m);
   overflow: hidden;
@@ -905,6 +1057,62 @@ button {
   border: 1px dashed var(--rule-strong);
   border-radius: var(--radius-m);
   background: color-mix(in srgb, var(--card) 60%, transparent);
+}
+
+/* --- Wave-framed text boxes ---------------------------------------------- */
+/* A crest runs along the inside top and bottom edge of each box. Two pseudo
+   elements per box, so it costs no extra markup. */
+
+.panel,
+.now__item,
+.principle,
+.empty { position: relative; }
+
+.panel::before,
+.panel::after,
+.now__item::before,
+.now__item::after,
+.principle::before,
+.principle::after,
+.empty::before,
+.empty::after {
+  content: '';
+  position: absolute;
+  left: 0.9rem;
+  right: 0.9rem;
+  height: 9px;
+  background-image: var(--wave-tile);
+  background-repeat: repeat-x;
+  background-position: center;
+  background-size: 22px 9px;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.panel::before,
+.now__item::before,
+.principle::before,
+.empty::before { top: 3px; }
+
+.panel::after,
+.now__item::after,
+.principle::after,
+.empty::after { bottom: 3px; transform: scaleY(-1); }
+
+/* The search field is a text box too — a single crest under it. */
+.field { position: relative; overflow: hidden; }
+.field::after {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  right: 0.7rem;
+  bottom: 1px;
+  height: 7px;
+  background-image: var(--wave-tile);
+  background-repeat: repeat-x;
+  background-size: 20px 8px;
+  opacity: 0.4;
+  pointer-events: none;
 }
 
 /* --- Prose --------------------------------------------------------------- */
@@ -1162,7 +1370,7 @@ button {
   .split { grid-template-columns: minmax(0, 1fr); }
   .hero__grid { grid-template-columns: minmax(0, 1fr); }
   .whale-figure { order: -1; min-height: 12rem; }
-  .whale-figure img { width: min(11rem, 48%); }
+  .whale-hold { width: min(11rem, 48%); }
   .whale-say { right: 8%; top: 4%; }
 }
 
@@ -1213,8 +1421,8 @@ button {
     transition-duration: 0.001ms !important;
   }
   .reveal { opacity: 1; transform: none; }
-  .bubbles { display: none; }
-  .whale-figure img { animation: none; }
+  .bubbles, .whale-rain { display: none; }
+  .whale-hold, .whale-hold__pet { animation: none; }
 }
 
 @media print {

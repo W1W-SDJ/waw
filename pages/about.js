@@ -39,9 +39,12 @@ export default async function renderAbout(outlet) {
           <h1 class="hero__title">关于<em>${esc(name)}</em></h1>
           <p class="hero__lede">${esc(cfg.taglineZh)} ${esc(cfg.tagline)}</p>
         </div>
-        <figure class="whale-figure">
-          <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async">
-          <figcaption>whale · 看板娘</figcaption>
+        <figure class="whale-figure" data-mascot>
+          <div class="whale-hold">
+            <img src="${link('whale.png')}" alt="鲸鱼娘抱着一条小鲸鱼" width="210" height="280" decoding="async">
+            <span class="whale-hold__pet" data-whale-pet></span>
+          </div>
+          <figcaption><span class="tap-hint">点她一下</span> · 看板娘</figcaption>
         </figure>
       </div>
     </section>
