@@ -57,13 +57,23 @@ git push
 或者一条命令推上去（需要 `GITHUB_TOKEN`，见下）：
 
 ```bash
-$env:GITHUB_TOKEN="ghp_xxx"; npm run push
+npm run push
 ```
 
 ### 关于 token
 
-`--push` 只从环境变量 `GITHUB_TOKEN` 读取凭据，用完会把 `origin` 还原成不带 token 的普通 HTTPS 地址，不会写进 `.git/config`。
 建 token：GitHub → Settings → Developer settings → Personal access tokens (classic) → 勾 `repo`。
+
+凭据按顺序读取，**推荐第一种**——token 不进对话记录、不进 shell 历史：
+
+1. 项目根目录的 `.github-token` 文件（已在 `.gitignore` 里，不会被提交）
+   ```powershell
+   Set-Content -Path .github-token -Value "ghp_xxx" -NoNewline
+   ```
+2. 环境变量 `GITHUB_TOKEN`
+
+推送完成后脚本会把 `origin` 还原成不带 token 的普通 HTTPS 地址，不会写进 `.git/config`。
+推完就可以删掉 `.github-token`。
 
 ### TLS 特别注意
 
