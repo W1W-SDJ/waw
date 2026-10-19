@@ -12,3 +12,5 @@ docs/preview/
 docs/.edge/
 .deploy-manifest.json
 docs/live/
+.probe/
+.whale-palette.json
