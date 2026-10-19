@@ -11,6 +11,8 @@
     "check": "node scripts/check.mjs",
     "fetch:repos": "node scripts/fetch-repos.mjs",
     "toolchain": "node scripts/get-toolchain.mjs",
-    "deploy": "node scripts/build.mjs && node scripts/deploy.mjs"
+    "deploy": "node scripts/build.mjs && node scripts/deploy.mjs",
+    "push": "node scripts/deploy.mjs --push --enable-pages",
+    "verify:live": "node scripts/verify-live.mjs"
   }
 }
