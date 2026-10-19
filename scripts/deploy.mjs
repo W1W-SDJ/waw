@@ -27,36 +27,37 @@ let capture = 0;
 
 /** Run git with inherited stdio (required under restricted sandboxing). */
 function git(args, { quiet = false } = {}) {
-  const out = quiet ? join(tmpDir, `out-${++capture}.txt`) : null;
-  const err = quiet ? join(tmpDir, `err-${capture}.txt`) : null;
-
-  const wrapped = out ? ['-c', 'core.pager=cat'] : [];
-  try {
-    if (out) {
-      // Write stdout/stderr to files; inherited handles cannot be captured directly.
-      const script = `& '${gitExe}' ${args.map((a) => `'${String(a).replace(/'/g, "''")}'`).join(' ')} 1> '${out}' 2> '${err}'; exit $LASTEXITCODE`;
-      execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
-        cwd: root,
-        stdio: 'ignore',
-      });
-      const text = existsSync(out) ? readFileSync(out, 'utf8').trim() : '';
-      return text;
-    }
-    execFileSync(gitExe, [...wrapped, ...args], {
+  if (!quiet) {
+    execFileSync(gitExe, args, {
       cwd: root,
       stdio: 'inherit',
       env: { ...process.env, GIT_TERMINAL_PROMPT: process.env.GITHUB_TOKEN ? '0' : '1' },
     });
     return '';
-  } catch (err2) {
-    if (quiet) return '';
-    throw err2;
-  } finally {
-    if (out) {
-      rmSync(out, { force: true });
-      rmSync(err, { force: true });
-    }
   }
+
+  // Capture path: PowerShell's `>` redirection emits UTF-16, so we set the console
+  // output encodings to UTF-8 and pipe through Out-File with an explicit encoding.
+  const out = join(tmpDir, `out-${++capture}.txt`);
+  const quoted = args.map((a) => `'${String(a).replace(/'/g, "''")}'`).join(' ');
+  const script = [
+    "$ErrorActionPreference='Continue'",
+    "$OutputEncoding=[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)",
+    `& '${gitExe}' ${quoted} 2>$null | Out-String | Set-Content -Path '${out}' -Encoding utf8`,
+  ].join('; ');
+
+  try {
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      cwd: root,
+      stdio: 'ignore',
+    });
+  } catch {
+    return '';
+  }
+
+  const text = existsSync(out) ? readFileSync(out, 'utf8').replace(/\r/g, '').trim() : '';
+  rmSync(out, { force: true });
+  return text;
 }
 
 /** Best-effort git call that must not abort the run. */
@@ -65,6 +66,19 @@ function gitTry(args, opts = {}) {
     return git(args, opts);
   } catch {
     return null;
+  }
+}
+
+/** Read a ref straight out of .git (no subprocess, no encoding pitfalls). */
+function readHead() {
+  try {
+    const head = readFileSync(join(root, '.git', 'HEAD'), 'utf8').trim();
+    if (!head.startsWith('ref: ')) return head.slice(0, 7);
+    const ref = head.slice(5).trim();
+    const sha = readFileSync(join(root, '.git', ...ref.split('/')), 'utf8').trim();
+    return sha.slice(0, 7);
+  } catch {
+    return '(none)';
   }
 }
 
@@ -133,7 +147,7 @@ if (!status) {
   console.log(`✓ committed "${subject}"`);
 }
 
-console.log(`· HEAD ${git(['log', '-1', '--pretty=%h %s'], { quiet: true }) || '(none)'}`);
+console.log(`· HEAD ${readHead()}`);
 
 /* ------------------------------------------------------------------ push -- */
 
