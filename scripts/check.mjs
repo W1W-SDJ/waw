@@ -125,7 +125,7 @@ if (existsSync(join(root, 'dist'))) {
     [/data-page="home"/, 'home page marker'],
     [/data-depth="0"/, 'home depth'],
     [/href="assets\/app-[0-9a-f]{8}\.css"/, 'hashed css link'],
-    [/src="main\.js"/, 'module entry'],
+    [/src="main\.js\?v=[0-9a-f]{8}"/, 'versioned module entry'],
     [/window\.__SITE__ = \{/, 'inline site config'],
     [/^<!doctype html>/i, 'doctype'],
   ];
@@ -133,7 +133,7 @@ if (existsSync(join(root, 'dist'))) {
 
   const sub = readFileSync(join(root, 'dist/projects/index.html'), 'utf8');
   if (!/href="\.\.\/assets\/app-/.test(sub)) fail('dist/projects/index.html css path is not depth-correct');
-  if (!/src="\.\.\/main\.js"/.test(sub)) fail('dist/projects/index.html js path is not depth-correct');
+  if (!/src="\.\.\/main\.js\?v=/.test(sub)) fail('dist/projects/index.html js path is not depth-correct');
   pass('dist HTML: page markers, hashed assets, depth-correct relative paths');
 
   // 5. Every local href/src must resolve to a real file inside dist/.

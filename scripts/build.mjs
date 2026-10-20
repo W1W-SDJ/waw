@@ -91,7 +91,9 @@ const hash = (content) => createHash('sha256').update(content).digest('hex').sli
 const SPECIFIER_RE = /(?:from|import)\s*\(?\s*['"](\.[^'"]+)['"]/g;
 
 function resolveSpecifier(fromFile, spec) {
-  const base = resolve(dirname(fromFile), spec);
+  // Specifiers may carry a cache-busting query (?v=…) — resolve the path only.
+  const pathOnly = spec.split(/[?#]/)[0];
+  const base = resolve(dirname(fromFile), pathOnly);
   const candidates = [base, `${base}.js`, `${base}.json`, join(base, 'index.js')];
   return candidates.find((c) => existsSync(c) && statSync(c).isFile()) ?? null;
 }
@@ -149,11 +151,25 @@ const cssMin = minifyCss(cssSource);
 const cssName = `assets/app-${hash(cssMin)}.css`;
 writeOut(cssName, cssMin);
 
-// 2. JS graph → copied verbatim (minified), entry keeps a stable name for simplicity.
+// 2. JS graph → copied verbatim (minified).
+// ES modules keep stable URLs (pages/home.js etc.), so a browser can keep serving a
+// stale copy after a deploy while the hashed CSS is fresh — which renders old markup
+// against new styles. Stamp a per-build version onto every module URL instead.
 const jsRelFiles = walkFiles(src).filter((f) => f.endsWith('.js'));
+const jsSource = jsRelFiles.map((rel) => readFileSync(join(src, rel), 'utf8')).join('\n');
+const buildId = hash(jsSource + cssMin);
+
+/** Append ?v=<buildId> to relative .js specifiers (import ... from './x.js'). */
+function versionSpecifiers(code) {
+  return code.replace(
+    /((?:\bfrom\s*|\bimport\s*\(\s*)['"])(\.{1,2}\/[^'"]+\.js)(['"])/g,
+    (_, lead, spec, tail) => `${lead}${spec}?v=${buildId}${tail}`,
+  );
+}
+
 for (const rel of jsRelFiles) {
   const code = readFileSync(join(src, rel), 'utf8');
-  writeOut(rel, minifyJs(code));
+  writeOut(rel, versionSpecifiers(minifyJs(code)));
 }
 if (existsSync(join(src, 'site.config.json'))) {
   copyFileSync(join(src, 'site.config.json'), writeOut('site.config.json', readFileSync(join(src, 'site.config.json'))));
@@ -181,7 +197,7 @@ function expandTemplate(template, page, depth, prefix) {
     __DEPTH__: String(depth),
     __ROOT__: prefix,
     __CSS__: `${prefix}${cssName}`,
-    __JS__: `${prefix}${JS_ENTRY}`,
+    __JS__: `${prefix}${JS_ENTRY}?v=${buildId}`,
     __CONFIG__: JSON.stringify(config),
     __LANG__: config.locale ?? 'zh-CN',
     __TITLE__: page === 'home' ? config.title : page === 'projects' ? `作品 · ${config.title}` : `关于 · ${config.title}`,
