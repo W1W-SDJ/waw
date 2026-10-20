@@ -41,8 +41,7 @@ export default async function renderAbout(outlet) {
         </div>
         <figure class="whale-figure" data-mascot>
           <div class="whale-hold">
-            <img src="${link('whale.png')}" alt="鲸鱼娘抱着一条小鲸鱼" width="210" height="280" decoding="async">
-            <span class="whale-hold__pet" data-whale-pet></span>
+            <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async">
           </div>
           <figcaption><span class="tap-hint">点她一下</span> · 看板娘</figcaption>
         </figure>

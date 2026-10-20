@@ -184,24 +184,6 @@ button {
 
 .whale-bg img { width: 100%; height: auto; }
 
-/* Where the little whale sits in her arms. Percentages refer to the sprite box, so it
-   tracks the character at any size. Tuned so both of her hands stay visible at the
-   sides — that's what makes it read as "hugging" rather than "stuck on". */
-.whale-pet-art {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.whale-bg__pet {
-  position: absolute;
-  left: 30.5%;
-  top: 58%;
-  width: 46%;
-  transform: rotate(-4deg);
-  filter: drop-shadow(0 6px 10px rgb(27 29 67 / 0.28));
-}
-
 :root[data-theme='dark'] .whale-bg { opacity: 0.2; filter: saturate(0.7) brightness(1.3); }
 
 /* --- Falling whales ------------------------------------------------------ */
@@ -608,22 +590,6 @@ button {
   filter: drop-shadow(0 18px 26px rgb(43 53 116 / 0.24));
 }
 
-.whale-hold__pet {
-  position: absolute;
-  left: 30.5%;
-  top: 60%;
-  width: 46%;
-  transform: rotate(-4deg);
-  filter: drop-shadow(0 5px 9px rgb(27 29 67 / 0.3));
-  transition: transform 0.4s var(--ease-out);
-  animation: pet-bob 4.2s ease-in-out infinite;
-}
-
-@keyframes pet-bob {
-  0%, 100% { transform: translateY(0) rotate(-5.2deg); }
-  50% { transform: translateY(-2px) rotate(-2.8deg); }
-}
-
 /* tap reaction: squash + hop */
 .whale-figure.is-tapped .whale-hold { animation: squash 0.52s var(--ease-out); }
 .whale-figure.is-tapped .whale-say { animation: pop 0.5s var(--ease-out); }
@@ -667,8 +633,6 @@ button {
   22% { opacity: 1; }
   100% { opacity: 0; transform: translate(calc(-50% + var(--x, 0px)), -74px) scale(var(--scale, 1)); }
 }
-
-.whale-hold__pet { pointer-events: none; }
 
 @keyframes bob {
   0%, 100% { transform: translateY(0) rotate(-0.4deg); }
@@ -1422,7 +1386,7 @@ button {
   }
   .reveal { opacity: 1; transform: none; }
   .bubbles, .whale-rain { display: none; }
-  .whale-hold, .whale-hold__pet { animation: none; }
+  .whale-hold { animation: none; }
 }
 
 @media print {

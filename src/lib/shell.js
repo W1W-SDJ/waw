@@ -1,19 +1,8 @@
 import { icon } from './icons.js';
 import { site, NAV, THEME_KEY, link, currentPage } from './site.js';
-import { whaleSvg } from './whale.js';
 import { initMascot, initWhaleRain } from './mascot.js';
 
 export { site, link, currentPage, esc, formatMonth, relativeDays } from './site.js';
-
-/* ------------------------------------------------------------- whales --- */
-
-/** Fill every [data-whale-pet] slot with the little whale she holds. */
-export function paintWhalePets(scope = document) {
-  for (const slot of scope.querySelectorAll('[data-whale-pet]')) {
-    if (slot.firstElementChild) continue;
-    slot.innerHTML = whaleSvg({ cls: 'whale-pet-art' });
-  }
-}
 
 /* ---------------------------------------------------------------- shell --- */
 
@@ -149,11 +138,9 @@ export async function boot(render) {
   const depth = Number(document.body.dataset.depth ?? 0);
   renderShell(depth);
   initTheme();
-  paintWhalePets();      // the background mascot's held whale
   initWhaleRain();       // slow drift of small whales behind everything
   const outlet = document.getElementById('content');
   await render(outlet);
-  paintWhalePets();      // page-rendered mascots
   initMascot();
   initReveal();
 }

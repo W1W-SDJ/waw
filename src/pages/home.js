@@ -38,8 +38,7 @@ export default async function renderHome(outlet) {
         <figure class="whale-figure" data-mascot>
           <p class="whale-say" data-mascot-say>${esc(say)}</p>
           <div class="whale-hold">
-            <img src="${link('whale.png')}" alt="鲸鱼娘抱着一条小鲸鱼" width="210" height="280" decoding="async" fetchpriority="high">
-            <span class="whale-hold__pet" data-whale-pet></span>
+            <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async" fetchpriority="high">
           </div>
           <figcaption><span class="tap-hint">点她一下</span> · 看板娘</figcaption>
         </figure>
