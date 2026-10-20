@@ -1,6 +1,6 @@
-import { icon } from '../lib/icons.js?v=f109f150';
-import { loadProjects, profile, stats } from '../data/projects.js?v=f109f150';
-import { esc, link } from '../lib/site.js?v=f109f150';
+import { icon } from '../lib/icons.js?v=89ef4c02';
+import { loadProjects, profile, stats } from '../data/projects.js?v=89ef4c02';
+import { esc, link } from '../lib/site.js?v=89ef4c02';
 
 const FOCUS = [
   {

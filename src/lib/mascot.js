@@ -1,4 +1,5 @@
 import { whaleSvg } from './whale.js';
+import { playSong } from './song.js';
 
 /* Falling whales — a slow drift of small whales behind the content.
    Count stays low on purpose: it should read as atmosphere, not confetti. */
@@ -80,9 +81,19 @@ export function initMascot() {
       figure.classList.add('is-singing');
       if (bubble) bubble.textContent = SING_TEXT;
 
+      // The click that started this is the user gesture browsers require for audio.
+      const songSeconds = playSong();
+      if (songSeconds === null && bubble) {
+        // No Web Audio (very old browser) — keep the visual performance.
+        bubble.textContent = '♪ 啦～啦啦～ ♪（这台设备放不出声音）';
+      }
+
+      // Keep the sway on screen for as long as the tune actually plays.
+      const singMs = songSeconds ? Math.round(songSeconds * 1000) + 450 : SING_MS;
+
       if (!reduce()) {
-        // Three waves of notes across the song.
-        for (const delay of [0, 1300, 2600]) {
+        // A wave of notes at the start, middle and end of the tune.
+        for (const delay of [0, Math.round(singMs * 0.33), Math.round(singMs * 0.66)]) {
           window.setTimeout(() => {
             if (singing) spawnBurst(figure, hold, NOTES, 3);
           }, delay);
@@ -93,7 +104,7 @@ export function initMascot() {
         singing = false;
         figure.classList.remove('is-singing');
         if (bubble) bubble.textContent = SING_DONE;
-      }, SING_MS);
+      }, singMs);
     };
 
     const react = () => {

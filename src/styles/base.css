@@ -394,6 +394,13 @@ button {
 .rail__meta a { transition: color 0.25s var(--ease); }
 .rail__meta a:hover { color: var(--accent); }
 
+.rail__toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
 .themebtn {
   display: inline-flex;
   align-items: center;
@@ -1411,4 +1418,11 @@ button {
   body { background: #fff; }
   .shell { display: block; }
   .card { break-inside: avoid; box-shadow: none; }
+}
+
+/* Sound toggle: muted reads as an outline only. */
+.themebtn.is-off {
+  color: var(--ink-4);
+  border-style: dashed;
+  background: transparent;
 }
