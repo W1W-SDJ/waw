@@ -35,11 +35,13 @@ export function initWhaleRain() {
   layer.appendChild(frag);
 }
 
-/* Mascot interaction — tap the whale girl and she reacts. */
+/* Mascot interaction — tap the whale girl and she reacts.
+   She cycles through seven lines; the seventh promises a song, so the tap after it
+   actually makes her sing. */
 
 const SAYINGS = [
   '今天也在认真摸鱼～',
-  '要不要看看我做的项目？',
+  '要不要看看我的项目？',
   '咕噜咕噜…在写代码',
   '一起做点可爱的东西吧',
   '嘿，别戳啦，会痒的！',
@@ -48,35 +50,69 @@ const SAYINGS = [
 ];
 
 const HEARTS = ['🐋', '🫧', '💙', '🐳'];
+const NOTES = ['♪', '♫', '♬', '🎵'];
+
+/** Shown while she sings, and right after. */
+const SING_TEXT = '♪ 啦～啦啦～ ♪';
+const SING_DONE = '唱完啦～ 还要听吗？';
+const SING_MS = 4200;
 
 export function initMascot() {
   const figures = document.querySelectorAll('[data-mascot]');
   if (!figures.length) return;
 
-  const sayings = new Map();
-
   for (const figure of figures) {
     const bubble = figure.querySelector('[data-mascot-say]');
     const hold = figure.querySelector('.whale-hold');
-    sayings.set(figure, 0);
+    let index = -1;   // -1 = nothing said yet
+    let singing = false;
 
     // Keyboard access: it behaves like a button.
     figure.setAttribute('role', 'button');
     figure.setAttribute('tabindex', '0');
     figure.setAttribute('aria-label', '和看板娘互动');
 
+    const reduce = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const sing = () => {
+      singing = true;
+      index = -1; // restart the cycle afterwards
+      figure.classList.add('is-singing');
+      if (bubble) bubble.textContent = SING_TEXT;
+
+      if (!reduce()) {
+        // Three waves of notes across the song.
+        for (const delay of [0, 1300, 2600]) {
+          window.setTimeout(() => {
+            if (singing) spawnBurst(figure, hold, NOTES, 3);
+          }, delay);
+        }
+      }
+
+      window.setTimeout(() => {
+        singing = false;
+        figure.classList.remove('is-singing');
+        if (bubble) bubble.textContent = SING_DONE;
+      }, SING_MS);
+    };
+
     const react = () => {
+      if (singing) return; // let her finish the song
+
       figure.classList.remove('is-tapped');
       // Force a reflow so the squash animation can replay on rapid taps.
       void figure.offsetWidth;
       figure.classList.add('is-tapped');
 
-      const next = ((sayings.get(figure) ?? 0) + 1) % SAYINGS.length;
-      sayings.set(figure, next);
-      if (bubble) bubble.textContent = SAYINGS[next];
+      // The line currently on screen was the promise — next tap delivers it.
+      if (index === SAYINGS.length - 1) {
+        sing();
+        return;
+      }
 
-      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (!reduce) spawnHearts(figure, hold);
+      index += 1;
+      if (bubble) bubble.textContent = SAYINGS[index];
+      if (!reduce()) spawnBurst(figure, hold, HEARTS, 3);
     };
 
     figure.addEventListener('click', react);
@@ -89,15 +125,15 @@ export function initMascot() {
   }
 }
 
-function spawnHearts(figure, origin) {
+/** Throw a small burst of emoji upward from `origin`. */
+function spawnBurst(figure, origin, symbols, count = 3) {
   const host = document.createElement('span');
   host.className = 'mascot-hearts';
   host.setAttribute('aria-hidden', 'true');
 
-  const count = 3;
   for (let i = 0; i < count; i++) {
     const el = document.createElement('i');
-    el.textContent = HEARTS[Math.floor(Math.random() * HEARTS.length)];
+    el.textContent = symbols[Math.floor(Math.random() * symbols.length)];
     el.style.setProperty('--x', `${(Math.random() * 54 - 27).toFixed(0)}px`);
     el.style.setProperty('--delay', `${(i * 90).toFixed(0)}ms`);
     el.style.setProperty('--scale', `${(0.75 + Math.random() * 0.6).toFixed(2)}`);

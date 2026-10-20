@@ -36,7 +36,7 @@ export default async function renderHome(outlet) {
         </div>
 
         <figure class="whale-figure" data-mascot>
-          <p class="whale-say" data-mascot-say>${esc(say)}</p>
+          <p class="whale-say" data-mascot-say aria-live="polite">${esc(say)}</p>
           <div class="whale-hold">
             <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async" fetchpriority="high">
           </div>

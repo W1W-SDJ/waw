@@ -1,4 +1,4 @@
-﻿/* ==========================================================================
+/* ==========================================================================
    waw — 蓝白 · 鲸鱼娘
    Palette sampled from the character sprite itself:
      deep  #1b1d43   mid  #343d7b   bright #556bb2
@@ -593,6 +593,23 @@ button {
 /* tap reaction: squash + hop */
 .whale-figure.is-tapped .whale-hold { animation: squash 0.52s var(--ease-out); }
 .whale-figure.is-tapped .whale-say { animation: pop 0.5s var(--ease-out); }
+
+/* singing: she rocks side to side and the bubble lights up */
+.whale-figure.is-singing .whale-hold { animation: sing-sway 1.15s ease-in-out infinite; }
+
+.whale-figure.is-singing .whale-say {
+  animation: none;
+  border-color: var(--blue-light);
+  box-shadow: 0 0 0 3px var(--glow), var(--shadow-m);
+}
+
+.whale-figure.is-singing figcaption { color: var(--accent); }
+
+@keyframes sing-sway {
+  0% { transform: rotate(-2.8deg) translateY(0); }
+  50% { transform: rotate(2.8deg) translateY(-4px); }
+  100% { transform: rotate(-2.8deg) translateY(0); }
+}
 
 @keyframes squash {
   0% { transform: scale(1, 1); }

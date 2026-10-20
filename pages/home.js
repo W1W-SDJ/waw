@@ -1,7 +1,7 @@
-import { icon } from '../lib/icons.js?v=02ebf735';
-import { projectCard } from '../lib/projects-view.js?v=02ebf735';
-import { link, esc } from '../lib/site.js?v=02ebf735';
-import { loadProjects, stats } from '../data/projects.js?v=02ebf735';
+import { icon } from '../lib/icons.js?v=1cde691b';
+import { projectCard } from '../lib/projects-view.js?v=1cde691b';
+import { link, esc } from '../lib/site.js?v=1cde691b';
+import { loadProjects, stats } from '../data/projects.js?v=1cde691b';
 
 const SAYINGS = [
   '今天也在认真摸鱼～',
@@ -35,7 +35,7 @@ export default async function renderHome(outlet) {
         </div>
 
         <figure class="whale-figure" data-mascot>
-          <p class="whale-say" data-mascot-say>${esc(say)}</p>
+          <p class="whale-say" data-mascot-say aria-live="polite">${esc(say)}</p>
           <div class="whale-hold">
             <img src="${link('whale.png')}" alt="鲸鱼娘 · 站点看板娘" width="210" height="280" decoding="async" fetchpriority="high">
           </div>

@@ -1,9 +1,9 @@
-import { boot } from './lib/shell.js?v=02ebf735';
+import { boot } from './lib/shell.js?v=1cde691b';
 
 const PAGES = {
-  home: () => import('./pages/home.js?v=02ebf735'),
-  projects: () => import('./pages/projects.js?v=02ebf735'),
-  about: () => import('./pages/about.js?v=02ebf735'),
+  home: () => import('./pages/home.js?v=1cde691b'),
+  projects: () => import('./pages/projects.js?v=1cde691b'),
+  about: () => import('./pages/about.js?v=1cde691b'),
 };
 
 const page = document.body.dataset.page ?? 'home';
