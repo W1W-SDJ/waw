@@ -108,14 +108,14 @@ UNABLE_TO_VERIFY_LEAF_SIGNATURE / unable to verify the first certificate
 
 | 元素 | 实现 | 位置 |
 | --- | --- | --- |
-| **怀抱中的小鲸鱼** | SVG 按百分比叠在立绘上（`left 30.5% / top 60% / width 46%`），手会露在两侧 | 首屏、关于页、右下角水印 |
 | **掉落的小鲸鱼** | 18 只，`transform` + 随机 `--l/--dur/--drift/--spin`，纯 CSS 动画 | 全站固定层，内容之下 |
 | **浪花边框** | `--wave-tile` 平铺 SVG 波纹；`.card` 用多层背景，其余文本框用 `::before/::after` | 作品卡、面板、此刻便签、搜索框 |
-| **点击互动** | 点看板娘：squash 回弹 + 气泡换一句（7 句循环）+ 冒 🐋🫧💙 | 首屏、关于页 |
+| **点击互动** | 点看板娘：squash 回弹 + 气泡换一句（7 句循环）→ 第 7 句后再点会唱歌（Web Audio 合成 + 摇摆 + 音符） | 首屏、关于页 |
+| **背景水印** | 另一张立绘（吃米饭的鲸鱼娘），已抠图裁边，WebP 103KB | 右下角固定 |
 
-小鲸鱼是**矢量叠加**而不是烘焙进 PNG：围裙上那只原图只有 38×20px，放大必糊；SVG 任意尺寸都清晰，还能单独做呼吸浮动。
+**两张立绘分工**：首屏/关于页那个是**可互动**的站立立绘（`whale.png`），右下角水印是**另一张**坐着吃饭的立绘（`whale-bg.webp`）。改水印不影响互动角色。
 
-所有动效都受 `prefers-reduced-motion` 保护——关掉后鲸鱼不再掉落、水泡隐藏、看板娘静止。
+所有动效都受 `prefers-reduced-motion` 保护——关掉后鲸鱼不再掉落、水泡隐藏、看板娘静止、不再唱歌（气泡文字照常切换）。
 - 滚动渐显带三重保险：IO + rAF 首屏即显 + 1.5s 兜底强制显示，任何环境都不会停在透明态
 - 相对路径按页面深度自动生成，部署在子路径或根域名都不会挂
 - 支持键盘导航、`prefers-reduced-motion`、打印样式
@@ -125,13 +125,27 @@ UNABLE_TO_VERIFY_LEAF_SIGNATURE / unable to verify the first certificate
 
 鲸鱼娘立绘来自 [dafeiyu-pet](https://github.com/1190fasheqi/dafeiyu-pet)（MIT License，DeepSeek 鲸鱼形象的二创），桌面端由 `whale-purse` 插件使用。
 
-站点用的两张图是从原始立绘裁切/缩放而来（`public/whale.png` 全身、`public/whale-head.png` 头像），由脚本生成：
+站点用三张图：
+
+| 文件 | 来源 | 生成方式 |
+| --- | --- | --- |
+| `public/whale.png` | 站立立绘（可互动的那只） | `npm run whale:assets` |
+| `public/whale-head.png` | 同一张的脸部裁切，用作导航头像 | `npm run whale:assets` |
+| `public/whale-bg.webp` | 坐着吃米饭的另一张立绘 | 抠图流水线，见下 |
 
 ```bash
-npm run whale:assets
+npm run whale:assets   # 前两张，读取 D:\ai\plugins\whale-purse\assets\whale-sprite.png
 ```
 
-脚本会读取本机 `D:\ai\plugins\whale-purse\assets\whale-sprite.png`，顺便打印采样出的调色板。换立绘后重跑一次即可。
+**背景水印的抠图流水线**（源图带浅蓝底，需要去背）：
+
+```bash
+node scripts/prepare-bg-whale.mjs <源图.jpg>   # 生成 canvas 抠图页
+# 用浏览器打开该页，--dump-dom 拿到 data URL
+node scripts/extract-bg-whale.mjs <dump.html> public/whale-bg.webp
+```
+
+抠图逻辑：从图像四边做泛洪填充（容差 34，相对边框平均色），去掉背景；再删除面积小于 0.6% 的孤立色块（漂浮的心形、闪光）；最后按 alpha 裁到她的轮廓，导出 760px 宽的 WebP。换新立绘后重跑这两步即可。
 
 ## 环境备注
 

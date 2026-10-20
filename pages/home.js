@@ -1,7 +1,7 @@
-import { icon } from '../lib/icons.js?v=89ef4c02';
-import { projectCard } from '../lib/projects-view.js?v=89ef4c02';
-import { link, esc } from '../lib/site.js?v=89ef4c02';
-import { loadProjects, stats } from '../data/projects.js?v=89ef4c02';
+import { icon } from '../lib/icons.js?v=9ee2a27e';
+import { projectCard } from '../lib/projects-view.js?v=9ee2a27e';
+import { link, esc } from '../lib/site.js?v=9ee2a27e';
+import { loadProjects, stats } from '../data/projects.js?v=9ee2a27e';
 
 const SAYINGS = [
   '今天也在认真摸鱼～',

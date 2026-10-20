@@ -14,6 +14,7 @@
     "deploy": "node scripts/build.mjs && node scripts/deploy.mjs",
     "push": "node scripts/build.mjs && node scripts/deploy.mjs --push --enable-pages",
     "verify:live": "node --use-system-ca scripts/verify-live.mjs",
-    "whale:assets": "node scripts/whale-assets.mjs"
+    "whale:assets": "node scripts/whale-assets.mjs",
+    "bg:whale": "node scripts/prepare-bg-whale.mjs"
   }
 }
