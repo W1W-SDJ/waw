@@ -48,7 +48,8 @@ function expandTemplate(page, depth) {
     __ROOT__: prefix,
     __CSS__: `${prefix}src/styles/base.css`,
     __JS__: `${prefix}src/main.js`,
-    __CONFIG__: JSON.stringify(config),
+    // 'dev' tells the freshness guard to stay quiet while developing.
+    __CONFIG__: JSON.stringify({ ...config, build: 'dev' }),
     __LANG__: config.locale ?? 'zh-CN',
     __TITLE__: page === 'home' ? config.title : page === 'projects' ? `作品 · ${config.title}` : `关于 · ${config.title}`,
     __DESC__: config.description,

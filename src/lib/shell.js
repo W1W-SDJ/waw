@@ -2,6 +2,7 @@ import { icon } from './icons.js';
 import { site, NAV, THEME_KEY, link, currentPage } from './site.js';
 import { initMascot, initWhaleRain } from './mascot.js';
 import { isMuted, setMuted } from './song.js';
+import { initFreshness } from './freshness.js';
 
 export { site, link, currentPage, esc, formatMonth, relativeDays } from './site.js';
 
@@ -170,6 +171,7 @@ export async function boot(render) {
   renderShell(depth);
   initTheme();
   initSound();
+  initFreshness(site.build);
   initWhaleRain();       // slow drift of small whales behind everything
   const outlet = document.getElementById('content');
   await render(outlet);

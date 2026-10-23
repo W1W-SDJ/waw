@@ -198,7 +198,9 @@ function expandTemplate(template, page, depth, prefix) {
     __ROOT__: prefix,
     __CSS__: `${prefix}${cssName}`,
     __JS__: `${prefix}${JS_ENTRY}?v=${buildId}`,
-    __CONFIG__: JSON.stringify(config),
+    // The build id rides inside the config object: a separate `__BUILD__` token would
+    // collide with the JS global of the same name and mangle it.
+    __CONFIG__: JSON.stringify({ ...config, build: buildId }),
     __LANG__: config.locale ?? 'zh-CN',
     __TITLE__: page === 'home' ? config.title : page === 'projects' ? `作品 · ${config.title}` : `关于 · ${config.title}`,
     __DESC__: config.description,
@@ -232,6 +234,10 @@ if (existsSync(publicDir)) {
     copyFileSync(join(publicDir, rel), target);
   }
 }
+
+// 5. Build id, for the freshness guard: an open tab compares this against the copy
+//    baked into the page it is showing.
+writeOut('version.json', `${JSON.stringify({ v: buildId, builtAt: new Date().toISOString() })}\n`);
 
 // 5. GitHub Pages.
 writeOut('.nojekyll', '');

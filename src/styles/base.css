@@ -1429,3 +1429,49 @@ button {
   border-style: dashed;
   background: transparent;
 }
+
+/* --- Freshness pill ------------------------------------------------------ */
+/* Shown when a deploy is newer than the page you are looking at. */
+.freshness {
+  position: fixed;
+  left: 50%;
+  bottom: 1.25rem;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.6rem 0.55rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--blue);
+  color: #fff;
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  box-shadow: 0 16px 32px -16px rgb(43 53 116 / 0.65);
+  transform: translateX(-50%);
+  animation: freshness-in 0.45s var(--ease-out);
+}
+
+:root[data-theme='dark'] .freshness { color: #0c1030; }
+
+.freshness__btn {
+  padding: 0.32rem 0.8rem;
+  border-radius: var(--radius-full);
+  background: #fff;
+  color: var(--blue);
+  font-size: 0.78rem;
+  font-weight: 600;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
+}
+
+:root[data-theme='dark'] .freshness__btn { background: #0c1030; color: #c8d4f5; }
+.freshness__btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -6px rgb(0 0 0 / 0.4); }
+
+@keyframes freshness-in {
+  from { opacity: 0; transform: translate(-50%, 12px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 34rem) {
+  .freshness { left: 1rem; right: 1rem; transform: none; justify-content: space-between; }
+  @keyframes freshness-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+}
