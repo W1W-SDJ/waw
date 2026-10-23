@@ -18,6 +18,15 @@ const CURATED = {
     category: 'web',
     tags: ['vanilla-js', 'static-site', 'design-system'],
   },
+  'Small-scale-project': {
+    title: 'Small-scale-project',
+    blurb:
+      '小而完整的项目合集。首个是桌面资讯筛选桌宠：透明置顶、定时抓取你指定的网页，按主题关键词打分筛选，本地规则抽摘要（不需要 API key），点卡片直达原文。',
+    note: 'Electron 44，运行时零依赖；抓取引擎手写 HTML 解析，带 GBK 兜底。',
+    role: '设计与开发',
+    category: 'tool',
+    tags: ['electron', 'desktop-pet', 'scraper', 'grep'],
+  },
 };
 
 const FALLBACK = {

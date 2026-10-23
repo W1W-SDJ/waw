@@ -1,7 +1,7 @@
-import { icon } from '../lib/icons.js?v=9ee2a27e';
-import { projectCard } from '../lib/projects-view.js?v=9ee2a27e';
-import { generatedAt, loadProjects, CATEGORY_LABELS } from '../data/projects.js?v=9ee2a27e';
-import { relativeDays } from '../lib/site.js?v=9ee2a27e';
+import { icon } from '../lib/icons.js?v=14940af1';
+import { projectCard } from '../lib/projects-view.js?v=14940af1';
+import { generatedAt, loadProjects, CATEGORY_LABELS } from '../data/projects.js?v=14940af1';
+import { relativeDays } from '../lib/site.js?v=14940af1';
 
 export default async function renderProjects(outlet) {
   const projects = await loadProjects();
